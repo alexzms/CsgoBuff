@@ -137,7 +137,7 @@ def main():
         data_all.append([itemName,data[1][8],data[0][8],x,9,data[2][8][0][0],data[2][8][0][1],data[2][8][1][0],data[2][8][1][1],data[2][8][2][0],data[2][8][2][1],data[2][8][3][0],data[2][8][3][1]])
         data_all.append([itemName,data[1][9],data[0][9],x,10,data[2][9][0][0],data[2][9][0][1],data[2][9][1][0],data[2][9][1][1],data[2][9][2][0],data[2][9][2][1],data[2][9][3][0],data[2][9][3][1]])
     df = pd.DataFrame(data_all, columns=['name','wear', 'price', 'page','number','sticker1_name','sticker1_wear','sticker2_name','sticker2_wear','sticker3_name','sticker3_wear','sticker4_name','sticker4_wear'])
-    fig = px.scatter(df, x ="wear",y ="price",hover_name='name',hover_data=['page','number'],color = 'page')
+    fig = px.scatter(df, x ="wear",y ="price",hover_name='name',hover_data=['page','number','sticker1_name','sticker1_wear','sticker2_name','sticker2_wear','sticker3_name','sticker3_wear','sticker4_name','sticker4_wear'],color = 'page')
     fig.show()
     
 
