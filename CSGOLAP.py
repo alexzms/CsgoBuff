@@ -94,9 +94,9 @@ def main():
     elif sort_method == 'priced':
         sort_method = 'price.desc'
     elif sort_method == 'wear':
-        sort_method = 'wear.asc'
+        sort_method = 'paintwear.asc'
     elif sort_method == 'wear':
-        sort_method = 'wear.desc'
+        sort_method = 'paintwear.desc'
     elif sort_method == 'new':
         sort_method = 'created.desc'
     elif sort_method == 'old':
