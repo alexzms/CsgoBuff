@@ -1,0 +1,8 @@
+sort_by = {
+	price.asc 价格由低到高
+	price.desc 价格由高到低
+	paintwear.asc 磨损低到高
+	paintwear.desc 磨损高到低
+	created.asc 最旧上架
+	created.desc 最新上架
+}
