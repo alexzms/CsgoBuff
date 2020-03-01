@@ -34,7 +34,7 @@ def getItem(goods_id,page_num,headers,mode,sort,sticker):
             if sticker == True:
                 itemSticker.append(getSticker(js,x))
             else:
-                itemSticker.append(['null','null'])
+                itemSticker.append([['null','null'],['null','null'],['null','null'],['null','null']])
         return [itemPrice,itemWear,itemSticker]
     elif mode == 2:
         return [getName(js,str(goods_id)),[],[]]
