@@ -16,11 +16,14 @@ import sys
 # 8:better hover
 # 9:login system
 
+DEBUG = True
+
+
 def login(username,password):
     #todo
     pass
 
-def getItem(goods_id,page_num,headers,mode,sort,sticker):
+def getItem(goods_id,page_num,headers,mode,sort = "price",keyword = ""):
     payload = {'game':'csgo','goods_id':goods_id,'page_num':str(page_num),'sort_by':sort,'mode':'','allow_tradable_cooldown':'1','_':''}
     r = requests.get('https://buff.163.com/api/market/goods/sell_order',params = payload,headers=headers)
     js = r.json()
@@ -28,14 +31,17 @@ def getItem(goods_id,page_num,headers,mode,sort,sticker):
         itemPrice = []
         itemWear = []
         itemSticker = []
+        itemImportance = []
         for x in range(0,10):
+            importance = 0
             itemPrice.append(float(getInfo(js,x,'price')))
             itemWear.append(float(getWear(js,x)))
-            if sticker == True:
-                itemSticker.append(getSticker(js,x))
-            else:
-                itemSticker.append([['null','null'],['null','null'],['null','null'],['null','null']])
-        return [itemPrice,itemWear,itemSticker]
+            stickers = getSticker(js,x)
+            if (keyword in stickers[0][0]) or (keyword in stickers[1][0]) or (keyword in stickers[2][0]) or (keyword in stickers[3][0]):
+                importance = 1
+            itemSticker.append(stickers)
+            itemImportance.append(importance)
+        return [itemPrice,itemWear,itemSticker,itemImportance]
     elif mode == 2:
         return [getName(js,str(goods_id)),[],[]]
     
@@ -73,12 +79,12 @@ def main():
         analyze = int(input("请输入你要分析的csgo饰品id: "))
         page_full = input("请输入你要分析的csgo饰品数量(x10)(格式：{起始页-终止页}): ")
         sort_method = input("请输入排序顺序(price(低到高),priced(高到低),wear,weard,new,old): ")
-        weather_sticker = input("是否获得贴纸数据(y/n): ")
+        keyword = input("请输入检索贴纸名称（片段）: ")
     else:
         analyze = int(sys.argv[1])
         page_full = sys.argv[2]
         sort_method = sys.argv[3]
-        weather_sticker = sys.argv[4]
+        keyword = sys.argv[4]
         print ('已从启动参数获得参数')
 
     # page parse
@@ -102,12 +108,6 @@ def main():
     elif sort_method == 'old':
         sort_method = 'created.asc'
 
-    # sticker parse
-    if weather_sticker == 'n':
-        weather_sticker = False
-    else:
-        weather_sticker = True
-
     page_start = int(page_split[0])
     page_end = int(page_split[1])
     login('','')
@@ -115,29 +115,23 @@ def main():
     headers={
         'User-Agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
         'Referer':'https://buff.163.com/',
-        'Cookie':'mail_psc_fingerprint=01fde5382cc83a2df5599647c6b1bccc; _ntes_nnid=8f32ece229cabf2b415c5d84bed54e45,1553513994953; _ntes_nuid=8f32ece229cabf2b415c5d84bed54e45; usertrack=CrHum1ynbCoMKKIsAwU+Ag==; vinfo_n_f_l_n3=549968d4ed4cfbe3.1.0.1570117734269.0.1570117797098; nts_mail_user=pumusy4546997@163.com:-1:1; Device-Id=4zwPlnjIQUO6zLQtEYTy; _ga=GA1.2.1629007142.1575890972; _ns=NS1.2.255152277.1581691039; _gid=GA1.2.1894175785.1582985758; Locale-Supported=zh-Hans; game=csgo; NTES_YD_SESS=dZkpmkRbjfofGqz7K6d0JlwEVZ5PB2MaHg0Hk14NkUVuqC5iqgFBt6mlVSfaGJ35gjOPhmt3ImLZv9g04EN6Bjkl2oF_lXpOgxpDVHObIdChHIHDLRnskkJiXWaxUDQZfWuddK44jwNF6dHngoGOP_HTLtJ9h5VH2FVB1ALzGASVo_0aR0lZ83puX7epzqxuiycmvpxRPryicYElig8c_T93Hc9DqXGlbx1fHJ.QsJqxP; S_INFO=1583039533|0|3&80##|19946167252; P_INFO=19946167252|1583039533|0|netease_buff|00&99|shh&1582985877&netease_buff#shh&null#10#0#0|&0|null|19946167252; session=1-xA6RcIV194s9igG5h6C4JLinp6VbUMm--sOj26fBHCRz2046555823; csrf_token=IjQ3ODE3Njc3MTJmOWI3ZTk0OTcxMjU1YzQ0NmM0MWM0ODliOTFhYzMi.ETzV4g.VJNpFoxFut2Pya1wwCBVP5jlbT4'
+        'Cookie':'Device-Id=5O7uvnHzq4CxBpYJJXjo; _ga=GA1.2.197175233.1583391618; _gid=GA1.2.1393834490.1583391618; Locale-Supported=zh-Hans; game=csgo; NTES_YD_SESS=QuTlPR.llgPEBw4wxAM8W_OdqIi98SznzDbfdAmJdX4USnZrSDeaKRv74_sIugkZDyihTvKkxvl1MVDbm2JRayd75wez70tiDCtH4fijxQnTfxfHl.qoddgr0GICXH91sGUQQYmmyEJeRQfqDwuihzfWlKgVTZ4f5e4aAOlPuO_BD1qD2qhFvfmdimpZYWKNBDP.p.SYFUuNVjgLkdw.tqokf6VHS0u7jCAsfgL9ogSCh; S_INFO=1583420955|0|3&80##|19946167252; P_INFO=19946167252|1583420955|0|netease_buff|00&99|shh&1583391644&netease_buff#shh&null#10#0#0|&0|null|19946167252; session=1-X28xdjl9bY_rL1IdAYssNy-89jXgUT8j3cyPkY8TQb1A2046555823; csrf_token=IjJmYWU4YzhhOWY4NTU3YjU3OTExZjIyOTU0NmRiZDVlNzVhMmUyZTci.EUKsxA.22MLTFMXt9cgtb3YcOpESJ_105s'
     }
-    itemName = getItem(analyze,1,headers,2,'default',0)[0]
+    itemName = getItem(analyze,1,headers,2,'default',"")[0]
     # print(price)
     # print(wear)
     # price_draw = np.array(flatten(price))
     # wear_draw = np.array(flatten(wear))
     # plt.scatter(wear_draw,price_draw,zorder = 0,picker = True)
     # plt.show()
+    print("正在获取数据..")
     for x in range(page_start,page_end+1):
-        data = getItem(analyze,x,headers,1,sort_method,weather_sticker)
-        data_all.append([itemName,data[1][0],data[0][0],x,1,data[2][0][0][0],data[2][0][0][1],data[2][0][1][0],data[2][0][1][1],data[2][0][2][0],data[2][0][2][1],data[2][0][3][0],data[2][0][3][1]])
-        data_all.append([itemName,data[1][1],data[0][1],x,2,data[2][1][0][0],data[2][1][0][1],data[2][1][1][0],data[2][1][1][1],data[2][1][2][0],data[2][1][2][1],data[2][1][3][0],data[2][1][3][1]])
-        data_all.append([itemName,data[1][2],data[0][2],x,3,data[2][2][0][0],data[2][2][0][1],data[2][2][1][0],data[2][2][1][1],data[2][2][2][0],data[2][2][2][1],data[2][2][3][0],data[2][2][3][1]])
-        data_all.append([itemName,data[1][3],data[0][3],x,4,data[2][3][0][0],data[2][3][0][1],data[2][3][1][0],data[2][3][1][1],data[2][3][2][0],data[2][3][2][1],data[2][3][3][0],data[2][3][3][1]])
-        data_all.append([itemName,data[1][4],data[0][4],x,5,data[2][4][0][0],data[2][4][0][1],data[2][4][1][0],data[2][4][1][1],data[2][4][2][0],data[2][4][2][1],data[2][4][3][0],data[2][4][3][1]])
-        data_all.append([itemName,data[1][5],data[0][5],x,6,data[2][5][0][0],data[2][5][0][1],data[2][5][1][0],data[2][5][1][1],data[2][5][2][0],data[2][5][2][1],data[2][5][3][0],data[2][5][3][1]])
-        data_all.append([itemName,data[1][6],data[0][6],x,7,data[2][6][0][0],data[2][6][0][1],data[2][6][1][0],data[2][6][1][1],data[2][6][2][0],data[2][6][2][1],data[2][6][3][0],data[2][6][3][1]])
-        data_all.append([itemName,data[1][7],data[0][7],x,8,data[2][7][0][0],data[2][7][0][1],data[2][7][1][0],data[2][7][1][1],data[2][7][2][0],data[2][7][2][1],data[2][7][3][0],data[2][7][3][1]])
-        data_all.append([itemName,data[1][8],data[0][8],x,9,data[2][8][0][0],data[2][8][0][1],data[2][8][1][0],data[2][8][1][1],data[2][8][2][0],data[2][8][2][1],data[2][8][3][0],data[2][8][3][1]])
-        data_all.append([itemName,data[1][9],data[0][9],x,10,data[2][9][0][0],data[2][9][0][1],data[2][9][1][0],data[2][9][1][1],data[2][9][2][0],data[2][9][2][1],data[2][9][3][0],data[2][9][3][1]])
-    df = pd.DataFrame(data_all, columns=['name','wear', 'price', 'page','number','sticker1_name','sticker1_wear','sticker2_name','sticker2_wear','sticker3_name','sticker3_wear','sticker4_name','sticker4_wear'])
-    fig = px.scatter(df, x ="wear",y ="price",hover_name='name',hover_data=['page','number','sticker1_name','sticker1_wear','sticker2_name','sticker2_wear','sticker3_name','sticker3_wear','sticker4_name','sticker4_wear'],color = 'page')
+        data = getItem(analyze,x,headers,1,sort_method,keyword)
+        for y in range(0,10):
+            data_all.append([itemName,data[1][y],data[0][y],x,1,data[2][y][0][0],data[2][y][0][1],data[2][y][1][0],data[2][y][1][1],data[2][y][2][0],data[2][y][2][1],data[2][y][3][0],data[2][y][3][1],data[3][y]])
+        print('|',end = '')
+    df = pd.DataFrame(data_all, columns=['name','wear', 'price', 'page','number','sticker1_name','sticker1_wear','sticker2_name','sticker2_wear','sticker3_name','sticker3_wear','sticker4_name','sticker4_wear','importance'])
+    fig = px.scatter(df,title = sort_method, x ="wear",y ="price",symbol = "importance",hover_name='name',hover_data=['page','number','sticker1_name','sticker1_wear','sticker2_name','sticker2_wear','sticker3_name','sticker3_wear','sticker4_name','sticker4_wear'],color = 'importance',labels=dict(wear = "磨损",price = "价格",page = "页码",number = "位数",sticker1_name = "        贴纸1",sticker1_wear = "贴纸1磨损",sticker2_name = "        贴纸2",sticker2_wear = "贴纸2磨损",sticker3_name = "        贴纸3",sticker3_wear = "贴纸3磨损", sticker4_name = "        贴纸4",sticker4_wear = "贴纸4磨损",importance = "贴纸片段匹配"))
     fig.show()
     
 

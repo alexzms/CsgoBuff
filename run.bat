@@ -1,1 +1,1 @@
-python N:\Python\Project\CSGOLowestActualPrice\CSGOLAP.py
+python F:\Python\Project\CSGOLowestActualPrice\CSGOLAP.py
